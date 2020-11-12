@@ -1,0 +1,96 @@
+#!/bin/sh
+
+set -e
+
+file="${1:-Dockerfile}"
+image="${2:-${CI_REGISTRY_IMAGE}}"
+cache="${3:-${image}/buildcache}"
+
+run() {
+	blue="\e[1;34m"
+	normal="\e[0m"
+
+	printf "${blue}%s\n${normal}" "$(echo "${@}" | sed -E 's/\s+(--|\.)/\n  \1/g')" >&2
+
+	set -f
+	# shellcheck disable=SC2068
+	${@}
+	set +f
+}
+
+echo "building ${image} using ${file} with cache from ${cache}"
+
+run docker context create ctx
+
+run docker buildx create --name builderx --driver docker-container --use ctx
+
+run docker buildx inspect --bootstrap
+
+args="--file={$file} --output=type=registry,name=${image}:${CI_COMMIT_SHA}"
+
+# tag as mrXXX (only for MR)
+if [ -n "${CI_MERGE_REQUEST_IID}" ]; then
+	args="${args} --tag=${image}:mr${CI_MERGE_REQUEST_IID}"
+fi
+
+# tag as X.X.X (only for versions)
+if [ -n "${CI_COMMIT_TAG}" ]; then
+	args="${args} --tag=${image}:${CI_COMMIT_TAG}"
+
+	# also tag major version (as in semantic versioning)
+	major_tag=$(echo "${CI_COMMIT_TAG}" | sed -nE 's/^[^0-9]*([0-9]+).*/\1/p')
+	if [ -n "${major_tag}" ]; then
+		args="${args} --tag=${image}:${major_tag}"
+	fi
+
+	# also tag minor version (as in semantic versioning)
+	minor_tag=$(echo "${CI_COMMIT_TAG}" | sed -nE 's/^[^0-9]*([0-9]+\.[0-9]+).*/\1/p')
+	if [ -n "${major_tag}" ]; then
+		args="${args} --tag=${image}:${minor_tag}"
+	fi
+fi
+
+# use cache from previous commit
+previous_commit_sha=$(run git rev-list -n 1 HEAD^1 || echo "")
+if [ -n "${previous_commit_sha}" ]; then
+	echo "will use cache from previous commit, SHA=${previous_commit_sha}"
+	args="${args} --cache-from=type=registry,ref=${cache}:${previous_commit_sha}"
+fi
+
+# use cache from last pushed commit if set by CI
+if [ -n "${CI_COMMIT_BEFORE_SHA}" ] && [ "${CI_COMMIT_BEFORE_SHA}" != "0000000000000000000000000000000000000000" ]; then
+	if [ "${CI_COMMIT_BEFORE_SHA}" != "${previous_commit_sha}" ]; then
+		echo "will use cache from previous pushed commit, SHA=${CI_COMMIT_BEFORE_SHA}"
+		args="${args} --cache-from=type=registry,ref=${cache}:${CI_COMMIT_BEFORE_SHA}"
+	fi
+fi
+
+# cache from latest commit to master if not building master
+if [ "${CI_COMMIT_BRANCH}" != "master" ]; then
+	master_commit_sha=$(run git rev-parse origin/master || echo "")
+	if [ -n "${master_commit_sha}" ]; then
+		echo "will use cache from latest commit to master, SHA=${master_commit_sha}"
+		args="${args} --cache-from=type=registry,ref=${cache}:${master_commit_sha}"
+	fi
+fi
+
+# cache from self only if building tags
+if [ -n "${CI_COMMIT_TAG}" ]; then
+  echo "will use cache from current commit, SHA=${CI_COMMIT_SHA}"
+	args="${args} --cache-from=type=registry,ref=${cache}:${CI_COMMIT_SHA}"
+fi
+
+# cache from latest common ancestor of source and target branch (only for MR)
+if [ -n "${CI_MERGE_REQUEST_TARGET_BRANCH_NAME}" ]; then
+	parent_commit_sha=$(run git merge-base "origin/${CI_MERGE_REQUEST_TARGET_BRANCH_NAME}" HEAD || echo "")
+	if [ -n "${master_commit_sha}" ]; then
+    echo "will use cache from latest common commit with ${CI_MERGE_REQUEST_TARGET_BRANCH_NAME}, SHA=${parent_commit_sha}"
+    args="${args} --cache-from=type=registry,ref=${cache}:${parent_commit_sha}"
+	fi
+fi
+
+args="${args} --cache-to=type=registry,ref=${cache}:${CI_COMMIT_SHA},mode=max"
+
+command="docker buildx build ${args} ."
+
+run "${command}"
