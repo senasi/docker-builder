@@ -4,7 +4,7 @@ FROM docker:20.10.1-git
 
 ENV BUILDX_VERSION v0.5.1
 
-COPY ./gitlab-build-docker-image /usr/local/bin/
+COPY ./scripts /usr/local/bin/
 
 COPY --from=release-cli /usr/local/bin/release-cli /usr/local/bin/release-cli
 
@@ -16,5 +16,5 @@ RUN apk add --no-cache curl jq openssh-client && \
         -o "${CLI_PLUGINS_DIR}/docker-buildx" && \
     chmod +x "${CLI_PLUGINS_DIR}/docker-buildx" && \
     # chmod scripts
-    chmod +x /usr/local/bin/gitlab-build-docker-image
-
+    chmod +x /usr/local/bin/gitlab-build-docker-image && \
+    chmod +x /usr/local/bin/setup-ssh
