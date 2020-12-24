@@ -83,8 +83,8 @@ fi
 # cache from latest common ancestor of source and target branch (only for MR)
 if [ -n "${CI_MERGE_REQUEST_TARGET_BRANCH_NAME}" ]; then
 	parent_commit_sha=$(run git merge-base "origin/${CI_MERGE_REQUEST_TARGET_BRANCH_NAME}" HEAD || echo "")
-	if [ -n "${master_commit_sha}" ]; then
-    echo "will use cache from latest common commit with ${CI_MERGE_REQUEST_TARGET_BRANCH_NAME}, SHA=${parent_commit_sha}"
+	if [ -n "${parent_commit_sha}" ]; then
+    echo "will use cache from latest common commit on ${CI_MERGE_REQUEST_TARGET_BRANCH_NAME}, SHA=${parent_commit_sha}"
     args="${args} --cache-from=type=registry,ref=${cache}:${parent_commit_sha}"
 	fi
 fi

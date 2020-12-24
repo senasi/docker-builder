@@ -1,13 +1,20 @@
-FROM docker:19.03.13-git
+FROM registry.gitlab.com/gitlab-org/release-cli:latest AS release-cli
 
-ENV BUILDX_VERSION v0.4.2
+FROM docker:20.10.1-git
+
+ENV BUILDX_VERSION v0.5.1
 
 COPY ./gitlab-build-docker-image /usr/local/bin/
 
-RUN CLI_PLUGINS_DIR="/usr/local/libexec/docker/cli-plugins" && \
-    apk add --no-cache curl jq openssh-client && \
+COPY --from=release-cli /usr/local/bin/release-cli /usr/local/bin/release-cli
+
+RUN apk add --no-cache curl jq openssh-client && \
+    # download && install buildx release
+    CLI_PLUGINS_DIR="/usr/local/libexec/docker/cli-plugins" && \
     mkdir -p "${CLI_PLUGINS_DIR}" && \
     curl -s -L "https://github.com/docker/buildx/releases/download/${BUILDX_VERSION}/buildx-${BUILDX_VERSION}.linux-amd64" \
         -o "${CLI_PLUGINS_DIR}/docker-buildx" && \
     chmod +x "${CLI_PLUGINS_DIR}/docker-buildx" && \
+    # chmod scripts
     chmod +x /usr/local/bin/gitlab-build-docker-image
+
