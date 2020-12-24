@@ -6,7 +6,7 @@ private_key="${2:-${SSH_PRIVATE_KEY_BASE64}}"
 known_hosts="${2:-${SSH_KNOWN_HOSTS}}"
 
 eval "$(ssh-agent -s)"
-echo "${private_key}" | base64 -d | tr -d | tr -d '\r' | ssh-add -
+echo "${private_key}" | base64 -d | tr -d '\r' | ssh-add -
 
 if [ -n "${known_hosts}" ]; then
   mkdir -p ~/.ssh
