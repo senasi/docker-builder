@@ -5,14 +5,15 @@ set -e
 private_key="${1:-${SSH_PRIVATE_KEY_BASE64}}"
 known_hosts="${2:-${SSH_KNOWN_HOSTS}}"
 
-agent_response="$(ssh-agent -s)"
+agent_response="$(ssh-agent -s | grep export)"
 
-eval "${agent_response}"
+eval "${agent_response}" 1>&2
 
 echo "${private_key}" | base64 -d | tr -d '\r' | ssh-add -
 
 if [ -n "${known_hosts}" ]; then
   mkdir -p ~/.ssh
+  echo "adding to known_hosts" 1>&2
   echo "${known_hosts}" | tee -a ~/.ssh/known_hosts 1>&2
 fi
 

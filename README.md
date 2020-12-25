@@ -19,12 +19,13 @@ This script will install private key (via ssh-agent) and optionally write conten
 
 usage:
 ```
-setup-ssh "BASE64_ENCODED_PRIVATE_KEY" ["CONTENT_OF_KNOWN_HOSTS_FILE"] 
+eval $(setup-ssh "BASE64_ENCODED_PRIVATE_KEY" ["CONTENT_OF_KNOWN_HOSTS_FILE"]) 
 ```
 
-will use following environment variables if arguments are missing:
-- SSH_PRIVATE_KEY_BASE64
-- SSH_KNOWN_HOSTS
+- we need to use `eval` to export variables from `ssh-agent` to outer shell 
+- script will use following environment variables if arguments are missing:
+    - SSH_PRIVATE_KEY_BASE64
+    - SSH_KNOWN_HOSTS
    
 ### release-cli
 
