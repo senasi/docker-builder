@@ -8,7 +8,7 @@ COPY ./scripts /usr/local/bin/
 
 COPY --from=release-cli /usr/local/bin/release-cli /usr/local/bin/release-cli
 
-RUN apk add --no-cache curl jq openssh-client nodejs npm && \
+RUN apk add --no-cache curl jq openssh-client nodejs npm php7 php7-phar php7-simplexml php7-xmlwriter php7-tokenizer && \
     # download && install buildx release
     CLI_PLUGINS_DIR="/usr/local/libexec/docker/cli-plugins" && \
     mkdir -p "${CLI_PLUGINS_DIR}" && \
