@@ -16,7 +16,7 @@ RUN apk add --no-cache curl jq openssh-client nodejs npm php7 php7-phar php7-sim
         -o "${CLI_PLUGINS_DIR}/docker-buildx" && \
     chmod +x "${CLI_PLUGINS_DIR}/docker-buildx" && \
     # eslint
-    npm i -g eslint
+    npm i -g eslint && \
     # phpcs
     curl -s -L "https://squizlabs.github.io/PHP_CodeSniffer/phpcs.phar" -o "/usr/local/bin/phpcs" && \
     chmod +x "/usr/local/bin/phpcs" && \
