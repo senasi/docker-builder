@@ -4,6 +4,8 @@ FROM docker:20.10.1-git
 
 ENV BUILDX_VERSION v0.5.1
 
+ENV PHPSTAN_VERSION 0.12.64
+
 COPY ./scripts /usr/local/bin/
 
 COPY --from=release-cli /usr/local/bin/release-cli /usr/local/bin/release-cli
@@ -21,7 +23,10 @@ RUN apk add --no-cache curl jq openssh-client nodejs npm php7 php7-phar php7-sim
     echo "memory_limit = 1G" > /etc/php7/conf.d/99_limit.ini && \
     # phpcs
     curl -s -L "https://squizlabs.github.io/PHP_CodeSniffer/phpcs.phar" -o "/usr/local/bin/phpcs" && \
-    chmod +x "/usr/local/bin/phpcs" && \
+    chmod +x /usr/local/bin/phpcs && \
+    # phpstan
+    curl -s -L "https://github.com/phpstan/phpstan/releases/download/${PHPSTAN_VERSION}/phpstan.phar" -o "/usr/local/bin/phpstan" && \
+    chmod +x /usr/local/bin/phpstan && \
     # chmod scripts
     chmod +x /usr/local/bin/gitlab-build-docker-image && \
     chmod +x /usr/local/bin/setup-ssh
