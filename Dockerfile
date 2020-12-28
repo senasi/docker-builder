@@ -15,8 +15,8 @@ RUN apk add --no-cache curl jq openssh-client nodejs npm php7 php7-phar php7-sim
     curl -s -L "https://github.com/docker/buildx/releases/download/${BUILDX_VERSION}/buildx-${BUILDX_VERSION}.linux-amd64" \
         -o "${CLI_PLUGINS_DIR}/docker-buildx" && \
     chmod +x "${CLI_PLUGINS_DIR}/docker-buildx" && \
-    # eslint
-    npm i -g eslint && \
+    # eslint + handpick
+    npm i -g eslint handpick && \
     # increase memory limit  for php
     echo "memory_limit = 1G" > /etc/php7/conf.d/99_limit.ini && \
     # phpcs
