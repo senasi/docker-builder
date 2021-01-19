@@ -28,6 +28,11 @@ run docker buildx inspect --bootstrap
 
 args="--file=${file} --output=type=registry,name=${image}:${CI_COMMIT_SHA}"
 
+# tag as latest, if we are on master branch
+if [ "${CI_COMMIT_BRANCH}" = "master" ]; then
+	args="${args} --tag=${image}:latest"
+fi
+
 # tag as mrXXX (only for MR)
 if [ -n "${CI_MERGE_REQUEST_IID}" ]; then
 	args="${args} --tag=${image}:mr${CI_MERGE_REQUEST_IID}"
