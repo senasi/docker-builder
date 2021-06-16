@@ -1,10 +1,10 @@
 FROM registry.gitlab.com/gitlab-org/release-cli:latest AS release-cli
 
-FROM docker:20.10.1-git
+FROM docker:20.10.7-git
 
 ENV BUILDX_VERSION v0.5.1
 
-ENV PHPSTAN_VERSION 0.12.64
+ENV PHPSTAN_VERSION 0.12.89
 
 COPY ./scripts /usr/local/bin/
 
