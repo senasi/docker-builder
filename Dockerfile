@@ -1,8 +1,8 @@
 FROM registry.gitlab.com/gitlab-org/release-cli:latest AS release-cli
 
-FROM docker:20.10.9-git
+FROM docker:20.10.12-git
 
-ENV BUILDX_VERSION v0.6.3
+ENV BUILDX_VERSION v0.7.1
 
 ENV PHPSTAN_VERSION 0.12.99
 
@@ -10,7 +10,7 @@ COPY ./scripts /usr/local/bin/
 
 COPY --from=release-cli /usr/local/bin/release-cli /usr/local/bin/release-cli
 
-RUN apk add --no-cache curl jq openssh-client nodejs npm php7 php7-phar php7-simplexml php7-xmlwriter php7-tokenizer php7-ctype && \
+RUN apk add --no-cache curl jq openssh-client nodejs npm php7 php7-phar php7-simplexml php7-xmlwriter php7-tokenizer php7-ctype make && \
     # download && install buildx release
     CLI_PLUGINS_DIR="/usr/local/libexec/docker/cli-plugins" && \
     mkdir -p "${CLI_PLUGINS_DIR}" && \
