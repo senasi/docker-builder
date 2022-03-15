@@ -4,6 +4,15 @@ Docker image used to build other docker images
 
 ## Available tools & scripts
 
+### git-log-diff
+
+Print list of commit messages between `GIT_TAG` and previous non-pre (ie tag without dash) version.
+
+usage:
+```
+git-log-diff GIT_TAG
+```
+
 ### gitlab-build-docker-image
 
 usage:
