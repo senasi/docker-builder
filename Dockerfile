@@ -2,7 +2,7 @@ FROM registry.gitlab.com/gitlab-org/release-cli:latest AS release-cli
 
 FROM docker:20.10.12-git
 
-ENV BUILDX_VERSION v0.7.1
+ENV BUILDX_VERSION v0.8.0
 
 ENV PHPSTAN_VERSION 0.12.99
 
@@ -30,5 +30,6 @@ RUN apk add --no-cache curl jq openssh-client nodejs npm php7 php7-phar php7-sim
     curl -s -L "https://github.com/phpstan/phpstan/releases/download/${PHPSTAN_VERSION}/phpstan.phar" -o "/usr/local/bin/phpstan" && \
     chmod +x /usr/local/bin/phpstan && \
     # chmod scripts
+    chmod +x /usr/local/bin/git-log-diff && \
     chmod +x /usr/local/bin/gitlab-build-docker-image && \
     chmod +x /usr/local/bin/setup-ssh
