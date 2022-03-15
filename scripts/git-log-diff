@@ -23,7 +23,7 @@ escaped_current_ref=$(printf '%s' "${current_ref}" | sed 's/[.[/\(*^$+?{|]/\\&/g
 print currentRef "${current_ref}"
 
 # get sorted list of ref/tags, remove all tags with dash (ie pre-release tags) and then return previous tag
-prev_ref=$(git -c versionsort.suffix=- for-each-ref --sort=-v:refname --format '%(refname)' refs/tags | awk "/${escaped_current_ref}$/0" | grep -v "-" | head -n1)
+prev_ref=$(git -c versionsort.suffix=- for-each-ref --sort=-v:refname --format '%(refname)' refs/tags | awk "/${escaped_current_ref}$/0" | grep -v "-" | sed 1q)
 print prevRef "${prev_ref}"
 
 common_ancestor=$(git merge-base "${prev_ref}" "${current_ref}")
