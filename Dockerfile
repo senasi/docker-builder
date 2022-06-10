@@ -4,13 +4,11 @@ FROM docker:20.10.16-git
 
 ENV BUILDX_VERSION v0.8.2
 
-ENV PHPSTAN_VERSION 0.12.99
-
 COPY ./scripts /usr/local/bin/
 
 COPY --from=release-cli /usr/local/bin/release-cli /usr/local/bin/release-cli
 
-RUN apk add --no-cache curl jq openssh-client nodejs npm php7 php7-phar php7-simplexml php7-xmlwriter php7-tokenizer php7-ctype && \
+RUN apk add --no-cache curl jq openssh-client nodejs npm && \
     # download && install buildx release
     CLI_PLUGINS_DIR="/usr/local/libexec/docker/cli-plugins" && \
     mkdir -p "${CLI_PLUGINS_DIR}" && \
@@ -21,14 +19,6 @@ RUN apk add --no-cache curl jq openssh-client nodejs npm php7 php7-phar php7-sim
     npm install -g npm@latest && \
     # eslint + handpick
     npm install -g eslint handpick && \
-    # increase memory limit  for php
-    echo "memory_limit = 1G" > /etc/php7/conf.d/99_limit.ini && \
-    # phpcs
-    curl -s -L "https://squizlabs.github.io/PHP_CodeSniffer/phpcs.phar" -o "/usr/local/bin/phpcs" && \
-    chmod +x /usr/local/bin/phpcs && \
-    # phpstan
-    curl -s -L "https://github.com/phpstan/phpstan/releases/download/${PHPSTAN_VERSION}/phpstan.phar" -o "/usr/local/bin/phpstan" && \
-    chmod +x /usr/local/bin/phpstan && \
     # chmod scripts
     chmod +x /usr/local/bin/git-log-diff && \
     chmod +x /usr/local/bin/gitlab-build-docker-image && \
