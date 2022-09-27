@@ -6,22 +6,31 @@ file="${1:-Dockerfile}"
 image="${2:-${CI_REGISTRY_IMAGE}}"
 cache="${3:-${image}/buildcache}"
 
-flags="--debug"
-
 if [ -n "${DOCKER_REGISTRY_MIRROR}" ]; then
-  striped1="${DOCKER_REGISTRY_MIRROR#htt@(p|ps)://}"
-  striped="${striped1%/}"
+  striped1="${DOCKER_REGISTRY_MIRROR%/}"
 
   case "${DOCKER_REGISTRY_MIRROR}" in
     "http://"*)
-      mirror="--registry.\"docker.io\".mirrors=[\"${striped}\"] --registry.\"${striped}\".http=true"
+      striped="${striped1#http://}"
+      { \
+        echo "[registry.\"docker.io\"]"; \
+        echo "  mirrors = [\"${striped}\"]"; \
+        echo "[registry.\"${striped}\"]"; \
+        echo "  http = true"; \
+      } | tee /tmp/buildx.toml
       ;;
     *)
-      mirror="--registry.\"docker.io\".mirrors=[\"${striped}\"]"
+      striped="${striped1#https://}"
+      { \
+        echo "[registry.\"docker.io\"]"; \
+        echo "  mirrors = [\"${striped}\"]"; \
+#        echo "[registry.\"${striped}\"]"; \
+#        echo "  http = true"; \
+      } | tee /tmp/buildx.toml
       ;;
   esac
 
-  flags="${flags} ${mirror}"
+  config="--config /tmp/buildx.toml"
 fi
 
 run() {
@@ -38,7 +47,11 @@ run() {
 
 echo "building ${image} using ${file} with cache from ${cache}"
 
-run docker buildx create --name builderx --driver docker-container --buildkitd-flags "${flags}"
+# needed for exporting of cache, see error below:
+# ERROR: cache export feature is currently not supported for docker driver. Please switch to a different driver (eg. "docker buildx create --use")
+run docker context create ctx
+
+run docker buildx create --name builderx --driver docker-container --use ctx "${config}"
 
 run docker buildx inspect --bootstrap
 
