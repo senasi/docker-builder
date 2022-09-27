@@ -2,7 +2,7 @@ FROM registry.gitlab.com/gitlab-org/release-cli:latest AS release-cli
 
 FROM docker:20.10.16-git
 
-ENV BUILDX_VERSION v0.8.2
+ENV BUILDX_VERSION v0.9.1
 
 COPY ./scripts /usr/local/bin/
 

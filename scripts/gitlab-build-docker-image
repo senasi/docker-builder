@@ -6,6 +6,24 @@ file="${1:-Dockerfile}"
 image="${2:-${CI_REGISTRY_IMAGE}}"
 cache="${3:-${image}/buildcache}"
 
+flags="--debug"
+
+if [ -n "${DOCKER_REGISTRY_MIRROR}" ]; then
+  striped1="${DOCKER_REGISTRY_MIRROR#htt@(p|ps)://}"
+  striped="${striped1%/}"
+
+  case "${DOCKER_REGISTRY_MIRROR}" in
+    "http://"*)
+      mirror="--registry.\"docker.io\".mirrors=[\"${striped}\"] --registry.\"${striped}\".http=true"
+      ;;
+    *)
+      mirror="--registry.\"docker.io\".mirrors=[\"${striped}\"]"
+      ;;
+  esac
+
+  flags="${flags} ${mirror}"
+fi
+
 run() {
 	blue="\e[1;34m"
 	normal="\e[0m"
