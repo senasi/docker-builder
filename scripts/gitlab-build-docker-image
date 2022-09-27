@@ -38,9 +38,7 @@ run() {
 
 echo "building ${image} using ${file} with cache from ${cache}"
 
-run docker context create ctx
-
-run docker buildx create --name builderx --driver docker-container --use ctx
+run docker buildx create --name builderx --driver docker-container --buildkitd-flags "${flags}"
 
 run docker buildx inspect --bootstrap
 
