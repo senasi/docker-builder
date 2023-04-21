@@ -26,7 +26,7 @@ print currentRef "${current_ref}"
 prev_ref=$(git -c versionsort.suffix=- for-each-ref --sort=-v:refname --format '%(refname)' refs/tags | sed -n -e "/${escaped_current_ref}/,\$p" | tail -n +2 | grep -v "-" | sed -n 1p)
 print prevRef "${prev_ref}"
 
-if [ -n "${CI_COMMIT_TAG}" ]; then
+if [ -n "${prev_ref}" ]; then
   common_ancestor=$(git merge-base "${prev_ref}" "${current_ref}")
   print commonAncestor "${common_ancestor}"
 
