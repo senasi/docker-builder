@@ -26,25 +26,30 @@ print currentRef "${current_ref}"
 prev_ref=$(git -c versionsort.suffix=- for-each-ref --sort=-v:refname --format '%(refname)' refs/tags | sed -n -e "/${escaped_current_ref}/,\$p" | tail -n +2 | grep -v "-" | sed -n 1p)
 print prevRef "${prev_ref}"
 
-common_ancestor=$(git merge-base "${prev_ref}" "${current_ref}")
-print commonAncestor "${common_ancestor}"
+if [ -n "${CI_COMMIT_TAG}" ]; then
+  common_ancestor=$(git merge-base "${prev_ref}" "${current_ref}")
+  print commonAncestor "${common_ancestor}"
 
-current_messages=$(git --no-pager log --pretty=format:%s "${current_ref}" "^${common_ancestor}" | sort || true)
-prev_messages=$(git --no-pager log --pretty=format:%s "${prev_ref}" "^${common_ancestor}" | sort || true)
+  current_messages=$(git --no-pager log --pretty=format:%s "${current_ref}" "^${common_ancestor}" | sort || true)
+  prev_messages=$(git --no-pager log --pretty=format:%s "${prev_ref}" "^${common_ancestor}" | sort || true)
 
-## https://unix.stackexchange.com/a/309594
-diff_response=$(
-{
-  echo "${prev_messages}" 4<&- | {
-    # in here fd 3 points to the reading end of the pipe
-    # from cmd1, while fd 0 has been restored from the original
-    # stdin (saved on fd 4, now closed as no longer needed)
+  ## https://unix.stackexchange.com/a/309594
+  diff_response=$(
+  {
+    echo "${prev_messages}" 4<&- | {
+      # in here fd 3 points to the reading end of the pipe
+      # from cmd1, while fd 0 has been restored from the original
+      # stdin (saved on fd 4, now closed as no longer needed)
 
-    echo "${current_messages}" 3<&- | comm -13 /dev/fd/3 -
+      echo "${current_messages}" 3<&- | comm -13 /dev/fd/3 -
 
-  } 3<&0 <&4 4<&- # restore the original stdin for cmd2
+    } 3<&0 <&4 4<&- # restore the original stdin for cmd2
 
-} 4<&0 # save a copy of stdin for cmd2
-)
+  } 4<&0 # save a copy of stdin for cmd2
+  )
 
-echo "${diff_response}" | uniq | sed 's/^/- /'
+  echo "${diff_response}" | uniq | sed 's/^/- /'
+else
+  current_messages=$(git --no-pager log --pretty=format:%s "${current_ref}" | sort || true)
+  echo "${current_messages}" | uniq | sed 's/^/- /'
+fi
