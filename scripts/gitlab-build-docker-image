@@ -2,6 +2,18 @@
 
 set -e
 
+# options
+mount_env_secret=false
+
+while true; do
+  if [ "$1" = "--mount-env-secret" -o "$1" = "-e" ]; then
+      mount_env_secret=true
+      shift 1
+  else
+      break
+  fi
+done
+
 file="${1:-Dockerfile}"
 image="${2:-${CI_REGISTRY_IMAGE}}"
 cache="${3:-${image}/buildcache}"
@@ -127,6 +139,11 @@ if [ -n "${CI_MERGE_REQUEST_TARGET_BRANCH_NAME}" ]; then
 fi
 
 args="${args} --cache-to=type=registry,ref=${cache}:${CI_COMMIT_SHA},mode=max"
+
+if $mount_env_secret; then
+  env > .env
+  args="${args} --secret id=env,src=.env"
+fi
 
 command="docker buildx build ${args} ."
 
