@@ -141,7 +141,7 @@ fi
 args="${args} --cache-to=type=registry,ref=${cache}:${CI_COMMIT_SHA},mode=max"
 
 if $mount_env_secret; then
-  (set -o posix; export -p) > .env.sh
+  export -p > .env.sh
   args="${args} --secret id=env.sh,src=.env.sh"
 fi
 
