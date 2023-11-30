@@ -1,6 +1,6 @@
 FROM registry.gitlab.com/gitlab-org/release-cli:latest AS release-cli
 
-FROM docker:20.10.16-git
+FROM docker:24.0.7-git
 
 ENV BUILDX_VERSION v0.12.0
 
