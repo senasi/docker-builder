@@ -6,7 +6,7 @@ set -e
 mount_env_secret=false
 
 while true; do
-  if [ "$1" = "--mount-env-secret" -o "$1" = "-e" ]; then
+  if [ "$1" = "--mount-env-secret" ] || [ "$1" = "-e" ]; then
       mount_env_secret=true
       shift 1
   else
@@ -141,8 +141,8 @@ fi
 args="${args} --cache-to=type=registry,ref=${cache}:${CI_COMMIT_SHA},mode=max"
 
 if $mount_env_secret; then
-  env > .env
-  args="${args} --secret id=env,src=.env"
+  (set -o posix; export -p) > .env.sh
+  args="${args} --secret id=env.sh,src=.env.sh"
 fi
 
 command="docker buildx build ${args} ."
