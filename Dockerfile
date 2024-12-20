@@ -15,8 +15,8 @@ RUN apk add --no-cache curl curl-dev jq openssh-client nodejs npm && \
     curl -s -L "https://github.com/docker/buildx/releases/download/${BUILDX_VERSION}/buildx-${BUILDX_VERSION}.linux-amd64" \
         -o "${CLI_PLUGINS_DIR}/docker-buildx" && \
     chmod +x "${CLI_PLUGINS_DIR}/docker-buildx" && \
-    # update npm to latest
-    npm install -g npm@latest && \
+    # update npm to latest (or not for now)
+    # npm install -g npm@latest && \
     # eslint + handpick
     npm install -g eslint handpick && \
     # chmod scripts
