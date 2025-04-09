@@ -12,8 +12,8 @@ RUN apk add --no-cache  \
     curl-dev \
     jq  \
     openssh-client  \
-#    nodejs  \
-#    npm  \
+    nodejs  \
+    npm  \
     php  \
     php-phar  \
     php-iconv  \
