@@ -69,35 +69,42 @@ run docker buildx inspect --bootstrap
 
 args="--file=${file} --output=type=registry,name=${image}:${CI_COMMIT_SHA}"
 
-# tag as latest, if we are on master branch
-if [ "${CI_COMMIT_BRANCH}" = "master" ]; then
-	args="${args} --tag=${image}:latest"
-fi
+if [ -n "${DOCKER_BUILDER_TAG_OVERRIDE}" ]; then
+  # override tag provided with ENV variable
+  args="${args} --tag=${image}:${DOCKER_BUILDER_TAG_OVERRIDE}"
+else
+  # use tag logic...
 
-# tag as mrXXX (only for MR)
-if [ -n "${CI_MERGE_REQUEST_IID}" ]; then
-	args="${args} --tag=${image}:mr${CI_MERGE_REQUEST_IID}"
-fi
+  # tag as latest, if we are on master branch
+  if [ "${CI_COMMIT_BRANCH}" = "master" ]; then
+    args="${args} --tag=${image}:latest"
+  fi
 
-# tag as X.X.X (only for versions)
-if [ -n "${CI_COMMIT_TAG}" ]; then
-	full_tag=$(echo "${CI_COMMIT_TAG}" | sed 's/^v//')
-	args="${args} --tag=${image}:${full_tag}"
+  # tag as mrXXX (only for MR)
+  if [ -n "${CI_MERGE_REQUEST_IID}" ]; then
+    args="${args} --tag=${image}:mr${CI_MERGE_REQUEST_IID}"
+  fi
 
-  # if commit tag does not include dash, proceed with tagging major/minor versions
-  if $(echo "${CI_COMMIT_TAG}" | grep -vq "-"); then
-    # also tag major version (as in semantic versioning)
-    major_tag=$(echo "${CI_COMMIT_TAG}" | sed -nE 's/^v?[^0-9]*([0-9]+).*/\1/p')
-    if [ -n "${major_tag}" ]; then
-      args="${args} --tag=${image}:${major_tag}"
+  # tag as X.X.X (only for versions)
+  if [ -n "${CI_COMMIT_TAG}" ]; then
+    full_tag=$(echo "${CI_COMMIT_TAG}" | sed 's/^v//')
+    args="${args} --tag=${image}:${full_tag}"
+
+    # if commit tag does not include dash, proceed with tagging major/minor versions
+    if $(echo "${CI_COMMIT_TAG}" | grep -vq "-"); then
+      # also tag major version (as in semantic versioning)
+      major_tag=$(echo "${CI_COMMIT_TAG}" | sed -nE 's/^v?[^0-9]*([0-9]+).*/\1/p')
+      if [ -n "${major_tag}" ]; then
+        args="${args} --tag=${image}:${major_tag}"
+      fi
+
+      # also tag minor version (as in semantic versioning)
+      minor_tag=$(echo "${CI_COMMIT_TAG}" | sed -nE 's/^v?[^0-9]*([0-9]+\.[0-9]+).*/\1/p')
+      if [ -n "${major_tag}" ]; then
+        args="${args} --tag=${image}:${minor_tag}"
+      fi
     fi
-
-    # also tag minor version (as in semantic versioning)
-    minor_tag=$(echo "${CI_COMMIT_TAG}" | sed -nE 's/^v?[^0-9]*([0-9]+\.[0-9]+).*/\1/p')
-    if [ -n "${major_tag}" ]; then
-      args="${args} --tag=${image}:${minor_tag}"
-    fi
-	fi
+  fi
 fi
 
 # use cache from previous commit
