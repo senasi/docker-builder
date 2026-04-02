@@ -125,7 +125,7 @@ fi
 # cache from latest commit to master if not building master
 if [ "${CI_COMMIT_BRANCH}" != "master" ]; then
 	master_commit_sha=$(run git rev-parse origin/master || echo "")
-	if [ -n "${master_commit_sha}" ]; then
+	if [ -n "${master_commit_sha}" ] && [ "${master_commit_sha}" != "origin/master" ]; then
 		echo "will use cache from latest commit to master, SHA=${master_commit_sha}"
 		args="${args} --cache-from=type=registry,ref=${cache}:${master_commit_sha}"
 	fi
