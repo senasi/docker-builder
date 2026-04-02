@@ -1,6 +1,6 @@
 FROM registry.gitlab.com/gitlab-org/release-cli:latest AS release-cli
 
-FROM docker:28.0.1-cli-alpine3.21
+FROM docker:29.3.1-cli-alpine3.23
 
 COPY ./scripts /usr/local/bin/
 

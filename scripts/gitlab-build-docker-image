@@ -18,33 +18,6 @@ file="${1:-Dockerfile}"
 image="${2:-${CI_REGISTRY_IMAGE}}"
 cache="${3:-${image}/buildcache}"
 
-if [ -n "${DOCKER_REGISTRY_MIRROR}" ]; then
-  striped1="${DOCKER_REGISTRY_MIRROR%/}"
-
-  case "${DOCKER_REGISTRY_MIRROR}" in
-    "http://"*)
-      striped="${striped1#http://}"
-      { \
-        echo "[registry.\"docker.io\"]"; \
-        echo "  mirrors = [\"${striped}\"]"; \
-        echo "[registry.\"${striped}\"]"; \
-        echo "  http = true"; \
-      } | tee /tmp/buildx.toml
-      ;;
-    *)
-      striped="${striped1#https://}"
-      { \
-        echo "[registry.\"docker.io\"]"; \
-        echo "  mirrors = [\"${striped}\"]"; \
-#        echo "[registry.\"${striped}\"]"; \
-#        echo "  http = true"; \
-      } | tee /tmp/buildx.toml
-      ;;
-  esac
-
-  config="--config /tmp/buildx.toml"
-fi
-
 run() {
 	blue="\e[1;34m"
 	normal="\e[0m"
@@ -58,14 +31,6 @@ run() {
 }
 
 echo "building ${image} using ${file} with cache from ${cache}"
-
-# needed for exporting of cache, see error below:
-# ERROR: cache export feature is currently not supported for docker driver. Please switch to a different driver (eg. "docker buildx create --use")
-run docker context create ctx
-
-run docker buildx create --name builderx --driver docker-container --use ctx "${config}"
-
-run docker buildx inspect --bootstrap
 
 args="--file=${file} --output=type=registry,name=${image}:${CI_COMMIT_SHA}"
 
@@ -153,6 +118,6 @@ if $mount_env_secret; then
   args="${args} --secret id=env.sh,src=.env.sh"
 fi
 
-command="docker buildx build ${args} ."
+command="docker build ${args} ."
 
 run "${command}"
