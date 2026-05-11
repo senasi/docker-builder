@@ -10,7 +10,7 @@ while true; do
   if [ "$1" = "--mount-env-secret" ] || [ "$1" = "-e" ]; then
       mount_env_secret=true
       shift 1
-  if [ "$1" = "--export-min-cache" ]; then
+  elif [ "$1" = "--export-min-cache" ]; then
       export_min_cache=true
       shift 1
   else
