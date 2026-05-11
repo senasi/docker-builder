@@ -4,10 +4,14 @@ set -e
 
 # options
 mount_env_secret=false
+export_min_cache=false
 
 while true; do
   if [ "$1" = "--mount-env-secret" ] || [ "$1" = "-e" ]; then
       mount_env_secret=true
+      shift 1
+  if [ "$1" = "--export-min-cache" ]; then
+      export_min_cache=true
       shift 1
   else
       break
@@ -111,7 +115,11 @@ if [ -n "${CI_MERGE_REQUEST_TARGET_BRANCH_NAME}" ]; then
 	fi
 fi
 
-args="${args} --cache-to=type=registry,ref=${cache}:${CI_COMMIT_SHA},mode=max"
+cache_mode = "max"
+if $export_min_cache; then
+  cache_mode = "min"
+fi
+args="${args} --cache-to=type=registry,ref=${cache}:${CI_COMMIT_SHA},mode=${cache_mode}"
 
 if $mount_env_secret; then
   export -p > .env.sh
